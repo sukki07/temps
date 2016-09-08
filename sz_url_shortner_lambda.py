@@ -1,4 +1,4 @@
-m __future__ import print_function
+from __future__ import print_function
 import boto3
 import json
 import md5
@@ -37,25 +37,25 @@ def get_base_62_code_for_url(url):
 def process_get(event):
   if sanity_check_on_get(event) == True:
     dynamodb = boto3.resource('dynamodb')
-    table = dynamodb.Table('url_u')
+    table = dynamodb.Table('sz_url_shortner_table')
     shortcode = event['shortcode']
     result = table.get_item(Key={'code':shortcode})
     if 'Item' in result:
       url = result['Item']['url']
       return {'destination_url':url,'message':'redirecting to '+url}
     else:
-      raise Exception('resourceNotFound')
+      raise Exception('Error:ResourceNotFound')
   else:
-    raise Exception('invalidRequest')
+    raise Exception('Error:InvalidRequest')
 
 
 
 def process_post(event):
   if sanity_check_on_post(event) == True:
     dynamodb = boto3.resource('dynamodb')
-    table = dynamodb.Table('url_u')
+    table = dynamodb.Table('sz_url_shortner_table')
     url_to_be_saved = event['body']['url']
-    result = table.query(IndexName='index_on_url',Select='ALL_ATTRIBUTES',KeyConditions={'url':{'AttributeValueList':[url_to_be_saved],'ComparisonOperator':'EQ'}})
+    result = table.query(IndexName='url-index',Select='ALL_ATTRIBUTES',KeyConditions={'url':{'AttributeValueList':[url_to_be_saved],'ComparisonOperator':'EQ'}})
     
     if len(result['Items']) > 0:
       #url is present already,return the old code
@@ -78,7 +78,7 @@ def process_post(event):
           else:
             return {'message':'saved successfully','shortcode':rehashcode}
   else:
-    raise Exception('invalidRequest')
+    raise Exception('Error:InvalidPostRequest')
 
 
 def lambda_handler(event, context):
@@ -88,4 +88,4 @@ def lambda_handler(event, context):
   elif event['http_method'] == 'POST':
     return process_post(event)
   else:
-    raise Exception('methodNotSupported')
+    raise Exception('Error:MethodNotSupported')
