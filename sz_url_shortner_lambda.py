@@ -22,6 +22,7 @@ def base_62_encode_number(num):
 def sanity_check_on_get(event):
   return True
 def sanity_check_on_post(event):
+  #check for url present or no
   return True
 
 def get_base_62_code_for_url(url):
@@ -80,7 +81,7 @@ def process_post(event):
   else:
     raise Exception('Error:InvalidPostRequest')
 
-
+#can keep a separate table to keep collisions for future reference
 def lambda_handler(event, context):
   print("Received event: " + json.dumps(event, indent=2))
   if event['http_method'] == 'GET':
